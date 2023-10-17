@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "digitaltracestp",
+  "private_key_id": "244261c911809e470082d22907679363c9c08476",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCxggYmX0B/MtBD\nIA7IJbnlHOpcf51t8/EEqMy/VqL8LiBDqPtIkcak3B/7VBq9D+aQ5vnG+JxK+hwD\nwusg5Kgvlikttj/VryssrPumycw0WUpueiPsuqv/LnbZ8TZ6k1PC+wNs/Xyc7K3a\n+GQYx+sk4SrABfZQMY+cpOIWTCxDYXucHaVTtpUKH2ZKnFuztZoewPGXJhZNQcec\nwhVaT1gUZE3mQrLbINBaz3Yi8ueZ8nuyfYaDH25ryNVSN6a57J6FwoRHK2phHMcr\nRU+7Lv/bEM3gAEKoAYGklD70Z9ZkFm0AF3DV1g/SgQ33v9H6XDkbXIlnmvw+DbMG\nrcmQ+zixAgMBAAECggEAFz9HHOlmogH+onvlU7MVKHtj+h9Ad/D1xL1yqzBmgg5s\nbVAJMNTepiKqEZlPMymM8bc+SR+wIGWnG5sAfjtUB39r/y+aJpsdVWmGP664DrcO\n928Jm2xLME1ehWaA0wbOdn+3UCPWmRqqHj5fpZsxIZBXr/RX8OK8wzAY6ACr31sB\npHvTEGTNjsDp9CpWsoMZWf+ervkZ4MRGCbFSj3aP4tr5l53VL89OfdSZU2W/FcyG\n3Ehl8blkfS1aWUdgMoLQfoMT2QimoLRIaMWfqjH6za++glrfHr4wPo5j2Jn+EM8t\nFvdmge+AnTm0AdpclLCphs/mqwrIj3tBn7uiLmGtkQKBgQDz4ozfZl2VOxILcI7+\n5YZsqv6xXDVy5U/yy9Qc9ubbkokOD0LnmW1mKUgkpwW5q/GVnQsV1d69iJ7x/p8K\nNZ65ntmJNkkmBP9ziuA8hV3AraS2AQyIT3TlXnHmyOyurDnp50s3k/qX8wEHMs00\n+lQ0xaBcQZcJwrc7hCA/xPggpQKBgQC6U13Ikz79+QifCFWERSr54SIQEp8CBPJB\nNM60Y/igfsnY5Ct3N20D+WwkTBUxKh2DL2NmnyKAEwoqtkzHSo9c6efOiCUO9cDF\nnxTb25plZR8ioqG4kVv+aRJgEvf1b9LKrQzX5NQVsVHCPdK3RpBB6Yq9XGAfZHdk\nXJskRHSOHQKBgQCzJg7PJ7XEojCeIJ+Z0+aLuov+orpMXO/+bQWyBRgN4LU2k7VU\nxRpceiSZb+s/uXNrsIFtF75XwZzoLF6NNFgVB//J0AuplvBC4pfXPSxiFeuxGlIn\nax52QosuuRdLNA4SqKlS+SuSJJnzvLiKmvvyC93BBxk4vUS1vlemID0YVQKBgQCQ\nOQdWweL4Y1MxBhprj758PK9JEaDSx1Fc96soJlnEoV9L6xFZ7iUL9nyme93LeHXv\nnTarsHHcAODVvtYfTK87lDJBw1AsDD1yunhC1fDkmylGfewAGUPD4UC/7O7RpATd\nrKVMV2tyfxZx67i29H+lBUjG2kHtCq7/mE7d+77cYQKBgQCNnQNHfkGixljklHRf\nLvOGOUOdsY814LePhTJY483tsIx7uGXhormiEMwZb7AfGq/nwluF1qFnSmRcBKb1\nEYzFgOukDlgRi4VHB43kFXqQgiuRxD1u3wAF4IXtKutc4UeTs/6nDzjhPnyMSAJ1\nAW1EhzrDcF9LChicT5ZUf9pLlA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "pythonapp@digitaltracestp.iam.gserviceaccount.com",
+  "client_id": "110145765419572038775",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/pythonapp%40digitaltracestp.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

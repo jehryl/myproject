@@ -223,6 +223,32 @@ def logger():
 def google_request():
     cookies_str = ""
 
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'digitaltracestp-244261c91180.json'
+    PROPERTY_ID = '407502806'
+    starting_date = "8daysAgo"
+    ending_date = "yesterday"
+
+    client = BetaAnalyticsDataClient()
+    
+    def get_visitor_count(client, property_id):
+        request = RunReportRequest(
+            property=f"properties/{property_id}",
+            date_ranges=[{"start_date": starting_date, "end_date": ending_date}],
+            metrics=[{"name": "activeUsers"}]
+        )
+
+        response = client.run_report(request)
+        
+        return response
+
+    # Get the visitor count using the function
+    response = get_visitor_count(client, PROPERTY_ID)
+
+    if response and response.row_count > 0:
+        metric_value = response.rows[0].metric_values[0].value
+    else:
+        metric_value = 0  # Handle the case where there is no data
+
     if request.method == 'POST':
         action = request.form.get('action')
 
@@ -233,6 +259,9 @@ def google_request():
         elif action == "ganalytics_request":
             req2 = requests.get("https://analytics.google.com/analytics/web/#/p407461953/reports/intelligenthome")
             cookies_str = str(req2.cookies._cookies)
+
+        elif action == "visitors_number":
+            return f'Number of visitors : {metric_value}'
 
     return """
     <!DOCTYPE html>
@@ -302,41 +331,11 @@ def google_request():
             <form method="POST">
                 <input type="submit" name="action" value="google_request" placeholder="Effectuer une requête Google">
                 <input type="submit" name="action" value="ganalytics_request" placeholder="Effectuer une requête Google Analytics">
+                <input type="submit" name="action" value="visitors_number" placeholder="Obtenir le nombre de visiteurs">
             </form>""" + f"<p>{cookies_str}</p>" + """</div>
     </body>
     </html>
     """
-
-def fetch_google_analytics_data():
-
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'cle_client.json'
-    PROPERTY_ID = 'xxxx'
-    starting_date = "8daysAgo"
-    ending_date = "yesterday"
-
-    client = BetaAnalyticsDataClient()
-    
-    def get_visitor_count(client, property_id):
-        request = RunReportRequest(
-            property=f"properties/{property_id}",
-            date_ranges=[{"start_date": starting_date, "end_date": ending_date}],
-            metrics=[{"name": "activeUsers"}]
-        )
-
-        response = client.run_report(request)
-        
-        return response
-
-    # Get the visitor count using the function
-    response = get_visitor_count(client, PROPERTY_ID)
-
-    if response and response.row_count > 0:
-        metric_value = response.rows[0].metric_values[0].value
-    else:
-        metric_value = "N/A"  # Handle the case where there is no data
-
-    return f'Number of visitors : {metric_value}'
-
 
 @google.tokengetter
 def get_google_oauth_token():
