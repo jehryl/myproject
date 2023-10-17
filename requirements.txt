@@ -1,2 +1,4 @@
 gunicorn
+requests
+selenium
 Flask

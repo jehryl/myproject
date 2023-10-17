@@ -1,102 +1,346 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, render_template, request, redirect, url_for, session
+from flask_oauthlib.client import OAuth
+import requests
 
-import requests, logging
+import logging
+import os
+from logging.config import dictConfig
+from google.analytics.data_v1beta import BetaAnalyticsDataClient
+from google.analytics.data_v1beta.types import RunReportRequest
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'random_secret_key'
 
-@app.route("/")
+oauth = OAuth(app)
+
+
+google = oauth.remote_app(
+    'google',
+    consumer_key="812917638396-4qoqndq1bjskmgro5ga8j32rl5ekh14h.apps.googleusercontent.com",
+    consumer_secret="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",
+    request_token_params={
+        'scope': 'https://www.googleapis.com/auth/analytics.readonly'
+    },
+    base_url='https://www.googleapis.com/oauth2/v1/',
+    request_token_url=None,
+    access_token_method='POST',
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+)
+
+last_message = ''
+
+
+@app.route('/')
 def hello_world():
-    prefix_google = """ <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-3G2B4QB8XY"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-3G2B4QB8XY');
-    </script>
-    """
-    button_html = """
-    <button onclick="sendEventToGoogleAnalytics()">Send Event to Google Analytics</button>
-    <script>
-      function sendEventToGoogleAnalytics() {
-        gtag('event', 'button_click', {
-          'event_category': 'Custom Events',
-          'event_label': 'Button Clicked'
-        });
-        alert('Event sent to Google Analytics!');
-      }
-    </script>
-    """
-    return prefix_google + "Hello World" + button_html
-
-
-# @app.route("/")
-# def hello_world():
-#     # Make a GET request to google.com
-#     req = requests.get("https://www.google.com/")
-    
-#     # Retrieve the cookies from the response
-#     cookies = req.cookies.get_dict()
-    
-    
-#     # Display the cookies in your app
-#     cookie_html = "<h2>Cookies from Google:</h2>"
-#     for key, value in cookies.items():
-#         cookie_html += f"<p>{key}: {value}</p>"
-    
-#     return cookie_html
-
-# @app.route("/")
-# def hello_world():
-#     # Spécifiez l'URL à laquelle vous souhaitez effectuer la requête
-#     url = "https://analytics.google.com/analytics/web/#/p407448032/reports/intelligenthome?params=_u..nav%3Dmaui"
-
-#     # Effectuez la requête GET vers l'URL
-#     req = requests.get(url)
-
-#     # Vérifiez si la requête a réussi
-#     if req.status_code == 200:
-#         # Affichez le contenu textuel de la réponse
-#         result = req.text
-#     else:
-#         # En cas d'erreur, affichez un message d'erreur
-#         result = f"Erreur de requête : Code de statut {req.status_code}"
-
-#     # Renvoyez le résultat comme réponse HTTP
-#     return result
-
-
-@app.route("/logger")
-def logger():
-    # Log on the server side (Python)
-    app.logger.info("This is a server-side log.")
-
-    logging.warning('okay')
-    # Log on the browser side
-    log_script = """
-    <script>
-      console.log("This is a browser-side log.");
-    </script>
-    """
-    return "Logger Page" + log_script
-
-@app.route("/message", methods=["GET", "POST"])
-def message():
-    if request.method == "POST":
-        # Récupérez le texte saisi par l'utilisateur depuis le formulaire
-        user_message = request.form.get("message")
-        # Vous pouvez faire quelque chose avec le message ici, comme l'afficher dans les logs côté serveur.
-        app.logger.info(f"Message from user: {user_message}")
-        return f"Message sent: {user_message}"
-
-    # Affichez le formulaire pour que l'utilisateur puisse saisir un message
     return """
-    <form method="POST">
-        <label for="message">Entrez votre message :</label>
-        <input type="text" id="message" name="message">
-        <button type="submit">Envoyer</button>
-    </form>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+            }
+
+            header {
+                background-color: #007BFF;
+                padding: 20px 0;
+            }
+
+            header h1 {
+                color: #fff;
+            }
+
+            .container {
+                margin: 20px;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            a {
+                text-decoration: none;
+                color: #007BFF;
+                margin: 10px;
+            }
+
+            button {
+                background-color: #007BFF;
+                color: #fff;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                border-radius: 5px;
+                font-size: 16px;
+                margin: 10px;
+            }
+
+            button:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Mon Application Web</h1>
+        </header>
+        <div class="container">
+            <a href="/logger">Accéder au Journal</a>
+            <a href="/google-request">Effectuer une Requête Google / Analytics</a>
+            <a href="/login">Connexion avec Google</a>
+        </div>
+    </body>
+    </html>
     """
 
-if __name__ == "__main__":
-    app.run()
+
+@app.route('/login')
+def login():
+    return google.authorize(callback=url_for('authorized', _external=True))
+
+@app.route('/logout')
+def logout():
+    session.pop('google_token')
+    return redirect(url_for('index'))
+
+@app.route('/login/authorized')
+def authorized():
+    response = google.authorized_response()
+    if response is None or response.get('access_token') is None:
+        return 'Accès refusé: raison=%s error=%s' % (
+            request.args['error_reason'],
+            request.args['error_description']
+        )
+
+    session['google_token'] = (response['access_token'], '')
+    user_info = google.get('userinfo')
+    return redirect(url_for('google_request'))
+
+@app.route('/logger', methods=['GET', 'POST'])
+def logger():
+    global last_message
+
+    if request.method == 'POST':
+        last_message = request.form['log_message']
+        app.logger.warning(f"Message de journal depuis Python : {last_message}")
+
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+            }
+
+            header {
+                background-color: #007BFF;
+                padding: 20px 0;
+            }
+
+            header h1 {
+                color: #fff;
+            }
+
+            .container {
+                margin: 20px;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            a {
+                text-decoration: none;
+                color: #007BFF;
+                margin: 10px;
+            }
+
+            form {
+                margin: 20px 0;
+            }
+
+            label {
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            input[type="text"] {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+            input[type="submit"] {
+                background-color: #007BFF;
+                color: #fff;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                border-radius: 5px;
+                font-size: 16px;
+                margin: 10px;
+            }
+
+            input[type="submit"]:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Journal</h1>
+        </header>
+        <div class="container">
+            <a href="/">Retour à la page d'accueil</a>
+            <a href="/google-request">Effectuer une requête Google</a>
+            <form method="POST">
+                <label for="log_message">Message de journal : </label>
+                <input type="text" id="log_message" name="log_message">
+                <input type="submit" value="Enregistrer">
+            </form>""" +f"<p>Dernier message enregistré : {last_message}</p>"  +"""</div>
+    </body>
+    </html>
+    """
+
+
+
+@app.route('/google-request', methods=['GET', 'POST'])
+def google_request():
+    cookies_str = ""
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == "google_request":
+            req = requests.get("https://www.google.com/")
+            cookies_str = str(req.cookies._cookies)
+
+        elif action == "ganalytics_request":
+            req2 = requests.get("https://analytics.google.com/analytics/web/#/p407461953/reports/intelligenthome")
+            cookies_str = str(req2.cookies._cookies)
+
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+                margin: 0;
+                padding: 0;
+                text-align: center;
+            }
+
+            header {
+                background-color: #007BFF;
+                padding: 20px 0;
+            }
+
+            header h1 {
+                color: #fff;
+            }
+
+            .container {
+                margin: 20px;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            a {
+                text-decoration: none;
+                color: #007BFF;
+                margin: 10px;
+            }
+
+            form {
+                margin: 20px 0;
+            }
+
+            input[type="submit"] {
+                background-color: #007BFF;
+                color: #fff;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                border-radius: 5px;
+                font-size: 16px;
+                margin: 10px;
+            }
+
+            input[type="submit"]:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Requêtes Google</h1>
+        </header>
+        <div class="container">
+            <a href="/">Retour à la page d'accueil</a>
+            <a href="/logger">Accéder au journal</a>
+            <form method="POST">
+                <input type="submit" name="action" value="google_request" placeholder="Effectuer une requête Google">
+                <input type="submit" name="action" value="ganalytics_request" placeholder="Effectuer une requête Google Analytics">
+            </form>""" + f"<p>{cookies_str}</p>" + """</div>
+    </body>
+    </html>
+    """
+
+def fetch_google_analytics_data():
+
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'cle_client.json'
+    PROPERTY_ID = 'xxxx'
+    starting_date = "8daysAgo"
+    ending_date = "yesterday"
+
+    client = BetaAnalyticsDataClient()
+    
+    def get_visitor_count(client, property_id):
+        request = RunReportRequest(
+            property=f"properties/{property_id}",
+            date_ranges=[{"start_date": starting_date, "end_date": ending_date}],
+            metrics=[{"name": "activeUsers"}]
+        )
+
+        response = client.run_report(request)
+        
+        return response
+
+    # Get the visitor count using the function
+    response = get_visitor_count(client, PROPERTY_ID)
+
+    if response and response.row_count > 0:
+        metric_value = response.rows[0].metric_values[0].value
+    else:
+        metric_value = "N/A"  # Handle the case where there is no data
+
+    return f'Number of visitors : {metric_value}'
+
+
+@google.tokengetter
+def get_google_oauth_token():
+    return session.get('google_token')
+
+if __name__ == '__main__':
+    app.run(debug=True)
