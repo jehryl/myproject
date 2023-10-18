@@ -224,6 +224,7 @@ def google_request():
         response = client.run_report(request)
         
         return response
+    # Hi
 
     # Get the visitor count using the function
     response = get_visitor_count(client, PROPERTY_ID)
