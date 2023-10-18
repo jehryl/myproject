@@ -105,23 +105,7 @@ def hello_world():
 def login():
     return google.authorize(callback=url_for('authorized', _external=True))
 
-@app.route('/logout')
-def logout():
-    session.pop('google_token')
-    return redirect(url_for('index'))
 
-@app.route('/login/authorized')
-def authorized():
-    response = google.authorized_response()
-    if response is None or response.get('access_token') is None:
-        return 'Accès refusé: raison=%s error=%s' % (
-            request.args['error_reason'],
-            request.args['error_description']
-        )
-
-    session['google_token'] = (response['access_token'], '')
-    user_info = google.get('userinfo')
-    return redirect(url_for('google_request'))
 
 @app.route('/logger', methods=['GET', 'POST'])
 def logger():
@@ -224,7 +208,7 @@ def google_request():
     cookies_str = ""
 
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'digitaltracestp-244261c91180.json'
-    PROPERTY_ID = '407502806'
+    PROPERTY_ID = '407448032'
     starting_date = "8daysAgo"
     ending_date = "yesterday"
 
@@ -336,10 +320,6 @@ def google_request():
     </body>
     </html>
     """
-
-@google.tokengetter
-def get_google_oauth_token():
-    return session.get('google_token')
 
 if __name__ == '__main__':
     app.run(debug=True)
