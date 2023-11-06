@@ -1,18 +1,22 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_oauthlib.client import OAuth
 import requests
-
-import logging
+from pytrends.request import TrendReq
 import os
-from logging.config import dictConfig
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest
+import io
+import base64
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from datetime import datetime,timedelta
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'random_secret_key'
 
 oauth = OAuth(app)
-
 
 google = oauth.remote_app(
     'google',
@@ -94,7 +98,8 @@ def hello_world():
         <div class="container">
             <a href="/logger">Accéder au Journal</a>
             <a href="/google-request">Effectuer une Requête Google / Analytics</a>
-            <a href="/login">Connexion avec Google</a>
+            <a href="/chart-image">Acceder au Chart</a>
+
         </div>
     </body>
     </html>
@@ -191,6 +196,7 @@ def logger():
         </header>
         <div class="container">
             <a href="/">Retour à la page d'accueil</a>
+            <a href="/chart-image">Acceder au Chart</a>
             <a href="/google-request">Effectuer une requête Google</a>
             <form method="POST">
                 <label for="log_message">Message de journal : </label>
@@ -202,14 +208,13 @@ def logger():
     """
 
 
-
 @app.route('/google-request', methods=['GET', 'POST'])
 def google_request():
     cookies_str = ""
 
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'digitaltracestp-244261c91180.json'
     PROPERTY_ID = '407448032'
-    starting_date = "8daysAgo"
+    starting_date = "28daysAgo"
     ending_date = "yesterday"
 
     client = BetaAnalyticsDataClient()
@@ -312,6 +317,7 @@ def google_request():
         </header>
         <div class="container">
             <a href="/">Retour à la page d'accueil</a>
+            <a href="/chart-image">Acceder au Chart</a>
             <a href="/logger">Accéder au journal</a>
             <form method="POST">
                 <input type="submit" name="action" value="google_request" placeholder="Effectuer une requête Google">
@@ -321,6 +327,32 @@ def google_request():
     </body>
     </html>
     """
+
+@app.route('/chart-image')
+def chart_image():
+    # Create a pytrends client and fetch data as previously mentioned
+    pytrends = TrendReq(hl='en-US', tz=360, geo='FR')
+    keywords = ['Jude Bellingham', 'Erling Haaland']
+    timeframe = 'today 3-m'
+    pytrends.build_payload(keywords, timeframe=timeframe)
+    interest_over_time_df = pytrends.interest_over_time()
+
+    # Create a time series chart
+    plt.figure(figsize=(10, 6))
+    for keyword in keywords:
+        plt.plot(interest_over_time_df.index, interest_over_time_df[keyword], label=keyword)
+    plt.xlabel('Date')
+    plt.ylabel('Interest Over Time')
+    plt.title('Google Trends Comparison')
+    plt.legend()
+
+    # Save the chart as an image
+    img_buffer = io.BytesIO()
+    plt.savefig(img_buffer, format='png')
+    img_buffer.seek(0)
+    img_data = base64.b64encode(img_buffer.read()).decode()
+
+    return f'<img src="data:image/png;base64,{img_data}" alt="Google Trends Chart">'
 
 if __name__ == '__main__':
     app.run(debug=True)
